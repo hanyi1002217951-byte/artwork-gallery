@@ -1,0 +1,4 @@
+node_modules/
+data/uploads/
+data/artworks.json
+.DS_Store
