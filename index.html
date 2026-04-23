@@ -763,7 +763,7 @@ function renderColorTags() {
   });
 }
 
-// ===== 保存作品（先上传图片，再保存数据）=====
+// ===== 保存作品（先转 base64，再保存数据）=====
 async function saveArtwork() {
   const name = document.getElementById('input-name').value.trim();
   if (!name) {
@@ -777,13 +777,17 @@ async function saveArtwork() {
   btn.disabled = true;
 
   try {
-    // 1. 上传新图片
+    // 1. 把本地新图片转成 base64
     let newUrls = [];
     if (pendingFiles.length > 0) {
-      showLoading('上传图片中…');
-      const fd = new FormData();
-      pendingFiles.forEach(f => fd.append('images', f));
-      const result = await apiFetch(`${API}/upload`, { method: 'POST', body: fd });
+      showLoading('处理图片中…');
+      const b64s = await Promise.all(pendingFiles.map(f => fileToBase64(f)));
+      // 通过 /api/upload 接口存储（server 端不做存储，直接透传）
+      const result = await apiFetch(`${API}/upload`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images: b64s })
+      });
       newUrls = result.urls;
     }
 
@@ -820,6 +824,16 @@ async function saveArtwork() {
   } finally {
     btn.disabled = false;
   }
+}
+
+// 文件转 base64
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 // ===== 删除作品 =====
