@@ -3,18 +3,14 @@ const cors     = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const path     = require('path');
 const fs       = require('fs');
-const zlib     = require('zlib');
-const crypto   = require('crypto');
 
 const app  = express();
 const PORT = process.env.PORT || 3030;
 
 // ===== GitHub Gist 配置 =====
 // GITHUB_TOKEN + GIST_ID: 永久存储作品数据
-// IMGBB_KEY: 可选，图片量大时使用图床（目前改用 base64+gzip 压缩存储）
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 const GIST_ID      = process.env.GIST_ID      || '';
-const IMGBB_KEY    = process.env.IMGBB_KEY    || '';
 
 // ===== 本地缓存目录 =====
 const CACHE_DIR  = path.join(__dirname, 'data');
@@ -41,10 +37,11 @@ async function loadData() {
   if (!GITHUB_TOKEN) return [];
   try {
     if (GIST_ID) {
-      const res = await axios.get(`https://api.github.com/gists/${GIST_ID}`, {
+      const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
         headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: 'application/vnd.github+json' }
       });
-      const file = Object.values(res.data.files).find(f => f.filename === 'artworks.json');
+      const json = await res.json();
+      const file = Object.values(json.files || {}).find(f => f.filename === 'artworks.json');
       if (file && file.content) {
         fs.writeFileSync(CACHE_FILE, file.content, 'utf-8');
         return JSON.parse(file.content);
@@ -73,18 +70,23 @@ async function saveData(data) {
     };
 
     if (GIST_ID) {
-      await axios.patch(`https://api.github.com/gists/${GIST_ID}`, payload, {
-        headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: 'application/vnd.github+json' }
+      await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
     } else {
-      const res = await axios.post('https://api.github.com/gists', payload, {
-        headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: 'application/vnd.github+json' }
+      const res = await fetch('https://api.github.com/gists', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
-      console.log('✅ 已创建 Gist，ID:', res.data.id);
-      console.log('请将 GIST_ID=' + res.data.id + ' 添加到 Railway 环境变量');
+      const json = await res.json();
+      console.log('✅ 已创建 Gist，ID:', json.id);
+      console.log('请将 GIST_ID=' + json.id + ' 添加到 Railway 环境变量');
     }
   } catch (e) {
-    console.error('❌ 保存 Gist 失败:', e.response?.data || e.message);
+    console.error('❌ 保存 Gist 失败:', e.message);
   }
 }
 
