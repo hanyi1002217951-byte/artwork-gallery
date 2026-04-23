@@ -134,6 +134,7 @@
     .cat-丸2 { background: rgba(212,238,255,.5); color: #3A7FBF; }
     .cat-车稿 { background: rgba(255,213,128,.35); color: #A06000; }
     .cat-私稿 { background: rgba(200,240,216,.5); color: #2A8050; }
+    .cat-丸3 { background: rgba(255,200,220,.4); color: #A03060; }
 
     /* ===== 画廊 ===== */
     .gallery-header {
@@ -495,6 +496,7 @@
     <button class="cat-btn" data-filter="丸2.0" onclick="filterByCategory('丸2.0')">✨ 丸2.0</button>
     <button class="cat-btn" data-filter="车稿" onclick="filterByCategory('车稿')">🎨 车稿</button>
     <button class="cat-btn" data-filter="私稿" onclick="filterByCategory('私稿')">🔒 私稿</button>
+    <button class="cat-btn" data-filter="丸3.0" onclick="filterByCategory('丸3.0')">🌺 丸3.0</button>
   </div>
 
   <!-- 画廊 -->
@@ -532,6 +534,7 @@
           <button type="button" class="cat-btn" data-cat="丸2.0" onclick="selectCategory('丸2.0')">✨ 丸2.0</button>
           <button type="button" class="cat-btn" data-cat="车稿" onclick="selectCategory('车稿')">🎨 车稿</button>
           <button type="button" class="cat-btn" data-cat="私稿" onclick="selectCategory('私稿')">🔒 私稿</button>
+          <button type="button" class="cat-btn" data-cat="丸3.0" onclick="selectCategory('丸3.0')">🌺 丸3.0</button>
         </div>
       </div>
 
@@ -939,8 +942,8 @@ function renderGallery() {
     return;
   }
 
-  const catClass = { '丸1.0':'cat-丸1', '丸2.0':'cat-丸2', '车稿':'cat-车稿', '私稿':'cat-私稿' };
-  const catEmoji = { '丸1.0':'🌸', '丸2.0':'✨', '车稿':'🎨', '私稿':'🔒' };
+  const catClass = { '丸1.0':'cat-丸1', '丸2.0':'cat-丸2', '车稿':'cat-车稿', '私稿':'cat-私稿', '丸3.0':'cat-丸3' };
+  const catEmoji = { '丸1.0':'🌸', '丸2.0':'✨', '车稿':'🎨', '私稿':'🔒', '丸3.0':'🌺' };
 
   filtered.forEach(a => {
     const main     = a.images && a.images[0] ? a.images[0] : null;
